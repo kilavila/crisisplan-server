@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// TODO
+// add admin functionality to user
+// or create a separate admin model
+// or create roles..
+
+model User {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  firstName     String
+  lastName      String
+  phone         String   @unique
+  password      String
+  expoPushToken String
+
+  Contact         Contact?
+  ContactRelation ContactRelation[]
+  Plan            Plan[]
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  ContactRelation ContactRelation[]
+}
+
+model ContactRelation {
+  createdAt DateTime @default(now())
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  Contact   Contact @relation(fields: [contactId], references: [id])
+  contactId String
+  @@id([userId, contactId])
+}
+
+model Plan {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  stepOne   String?
+  stepTwo   String?
+  stepThree String?
+  stepFour  String?
+  stepFive  String?
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model Clinic {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  name      String
+  address   String
+  city      String
+  lat       String
+  lng       String
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  name      String?
+  phone     String?
+  message   String
+}
