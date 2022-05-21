@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import axios from 'axios';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
@@ -49,7 +50,7 @@ export class UserService {
 
     async requestLinking(id: string, phone: string) {
         const user = await this.prisma.user.findUnique({
-            where: { id }
+            where: { id }
         });
 
         const contactUser = await this.prisma.user.findUnique({
@@ -61,8 +62,37 @@ export class UserService {
 
         if (!user || !contactUser.Contact.id) throw new NotFoundException();
 
+        const data = {
+            to: contactUser.expoPushToken,
+            title: `${user.firstName} ${user.lastName} vil ha deg som kontaktperson.`,
+            data: {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phone: user.phone
+            }
+        };
+
+        let returnStatus = false;
+
         // Send expo notification
+        axios.post('https://exp.host/--/api/v2/push/send', data)
+            .then(res => {
+                if (res.status === 200) {
+                    returnStatus = true;
+                } else {
+                    returnStatus = false;
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                returnStatus = false;
+            });
+
         // Return boolean
+        setTimeout(() => {
+            return returnStatus;
+        }, 3000);
     }
 
     async linkUserToContact(id: string, phone: string) {

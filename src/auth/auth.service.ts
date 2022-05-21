@@ -37,6 +37,8 @@ export class AuthService {
 
         const info = {
             id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
             phone: user.phone,
         };
 
